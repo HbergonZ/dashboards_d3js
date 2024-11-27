@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>D3 Dashboard</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <!-- Incluindo D3.js -->
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- Filtros -->
+    <div id="filters">
+      <input type="number" id="start-date" placeholder="Ano Início" />
+      <input type="number" id="end-date" placeholder="Ano Fim" />
+      <button id="filter-button">Filtrar</button>
+      <button id="clear-filters">Limpar Filtros</button>
+    </div>
+
+    <!-- Tooltip -->
+    <div id="tooltip"></div>
+
+    <!-- Gráficos -->
+    <div id="dashboard">
+      <div id="bar-chart-container" class="model1"></div>
+      <div id="line-chart-container" class="model1"></div>
+      <div id="pie-chart-container" class="model1"></div>
+      <div id="combined-chart-container" class="model1"></div>
+    </div>
+
+    <!-- Importando o app.js -->
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

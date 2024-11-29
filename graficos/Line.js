@@ -73,38 +73,50 @@ export function createLineChart(data, animated = true) {
     .attr("stroke-width", 2);
 
   if (animated) {
+    // Calcula o comprimento total da linha
+    const totalLength = path.node().getTotalLength();
+
+    // Animação da linha
     path
-      .attr("stroke-dasharray", function () {
-        const totalLength = this.getTotalLength();
-        return `${totalLength} ${totalLength}`;
-      })
-      .attr("stroke-dashoffset", function () {
-        return this.getTotalLength();
-      })
+      .attr("stroke-dasharray", `${totalLength} ${totalLength}`)
+      .attr("stroke-dashoffset", totalLength)
       .transition()
       .duration(1000)
       .ease(d3.easeLinear)
       .attr("stroke-dashoffset", 0);
-  }
 
-  // Adiciona marcadores
-  const markers = svg
-    .selectAll(".marker")
-    .data(data)
-    .enter()
-    .append("circle")
-    .attr("class", "marker")
-    .attr("cx", (d) => xScale(new Date(d.year, 0, 1)))
-    .attr("cy", animated ? height : (d) => yScale(d.value)) // Começa na base do gráfico se animado
-    .attr("r", 5)
-    .attr("fill", "steelblue");
+    // Adiciona marcadores
+    const markers = svg
+      .selectAll(".marker")
+      .data(data)
+      .enter()
+      .append("circle")
+      .attr("class", "marker")
+      .attr("cx", (d) => xScale(new Date(d.year, 0, 1)))
+      .attr("cy", (d) => yScale(d.value))
+      .attr("r", 5)
+      .attr("fill", "steelblue")
+      .attr("opacity", 0); // Inicialmente invisível
 
-  if (animated) {
+    // Sincroniza a animação dos marcadores com o progresso da linha
     markers
       .transition()
-      .delay((d, i) => i * 200) // Escalonar animações
-      .duration(800)
-      .attr("cy", (d) => yScale(d.value));
+      .delay((d, i) => (i / data.length) * 1000) // Sincroniza com o progresso da linha
+      .duration(200)
+      .attr("opacity", 1); // Torna visível gradualmente
+  } else {
+    // Adiciona marcadores estáticos se a animação estiver desativada
+    svg
+      .selectAll(".marker")
+      .data(data)
+      .enter()
+      .append("circle")
+      .attr("class", "marker")
+      .attr("cx", (d) => xScale(new Date(d.year, 0, 1)))
+      .attr("cy", (d) => yScale(d.value))
+      .attr("r", 5)
+      .attr("fill", "steelblue")
+      .attr("opacity", 1);
   }
 
   // Adiciona interatividade (tooltip)

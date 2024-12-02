@@ -4,9 +4,27 @@ import { createLineChart } from "./graficos/Line.js";
 import { createPieChart } from "./graficos/Pie.js";
 import { createCombinedChart } from "./graficos/Bar_Line.js"; // Certifique-se de que este caminho está correto
 
-// Usando os gráficos após carregar os dados
-d3.json("data.json").then(function (data) {
-  console.log(data);
+// Função para buscar os dados da API REST Countries
+async function fetchData() {
+  const url = "https://restcountries.com/v3.1/all"; // URL da API REST Countries
+  const response = await fetch(url);
+  const data = await response.json();
+
+  // Transformando os dados recebidos para um formato adequado para os gráficos
+  const formattedData = data.map((country) => ({
+    name: country.name.common,
+    population: country.population,
+    area: country.area,
+    region: country.region,
+    languages: Object.values(country.languages || {}),
+  }));
+
+  return formattedData;
+}
+
+// Usando os dados após carregá-los da API
+fetchData().then(function (data) {
+  console.log(data); // Verificando os dados carregados
 
   // Criando os gráficos com todos os dados inicialmente
   createBarChart(data);

@@ -1,24 +1,31 @@
 export function createBarChart(data) {
-  // Calculando a largura máxima dos nomes no eixo Y
-  const maxLabelWidth = Math.max(
-    ...data.map((d) => getTextWidth(d.name, "12px sans-serif"))
-  );
+  const maxLabelWidth = 150; // Largura máxima do rótulo no eixo Y
+  const lineHeight = 1.1; // Altura da linha (em unidades em)
+  const fontSize = 12; // Tamanho da fonte em pixels
+  const container = document.getElementById("bar-chart-container");
 
-  // Ajuste da margem esquerda, considerando a largura máxima dos nomes e a distância de 10px
-  const margin = { top: 20, right: 20, bottom: 100, left: maxLabelWidth + 10 };
+  // Função para calcular as dimensões do gráfico
+  function calculateDimensions() {
+    const containerWidth = container.clientWidth; // Largura do container
+    const containerHeight = 300; // Altura do container fixa para o gráfico
+    const width = containerWidth - margin.left - margin.right;
+    const height = data.length * 30;
 
-  const containerWidth = document.getElementById(
-    "bar-chart-container"
-  ).clientWidth; // Obtendo a largura da div
-  const containerHeight = 300; // Altura fixa, mas pode ser ajustada
-  const width = containerWidth - margin.left - margin.right;
-  const height = data.length * 30;
+    return { containerWidth, containerHeight, width, height };
+  }
 
+  const margin = { top: 20, right: 50, bottom: 10, left: maxLabelWidth + 20 };
+
+  // Calcula as dimensões do gráfico com base no tamanho atual do container
+  const { containerWidth, containerHeight, width, height } =
+    calculateDimensions();
+
+  // Ordenar os dados pelo valor de população
   data.sort((a, b) => b.population - a.population);
 
   const chartContainer = d3
     .select("#bar-chart-container")
-    .html("") // Limpar o conteúdo anterior
+    .html("") // Limpa o conteúdo anterior
     .append("div")
     .style("width", `${containerWidth}px`)
     .style("height", `${containerHeight}px`)
@@ -32,10 +39,18 @@ export function createBarChart(data) {
     .append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
+  // Função para abreviar números grandes
+  const abbreviateNumber = (num) => {
+    if (num >= 1e9) return (num / 1e9).toFixed(1) + "B";
+    if (num >= 1e6) return (num / 1e6).toFixed(1) + "M";
+    if (num >= 1e3) return (num / 1e3).toFixed(1) + "K";
+    return num.toString();
+  };
+
   const xScale = d3
     .scaleLinear()
-    .domain([0, d3.max(data, (d) => d.population)])
-    .range([0, width - 20]);
+    .domain([0, d3.max(data, (d) => d.population) * 1.05]) // Adiciona 5% de margem ao limite máximo
+    .range([10, width]); // Adiciona 10px de margem inicial na escala X
 
   const yScale = d3
     .scaleBand()
@@ -47,13 +62,13 @@ export function createBarChart(data) {
 
   svg
     .selectAll(".bar")
-    .data(data)
+    .data(data.filter((d) => d.population > 0)) // Filtra os países com população maior que 0
     .enter()
     .append("rect")
     .attr("class", "bar")
     .attr("x", 0)
     .attr("y", (d) => yScale(d.name))
-    .attr("width", (d) => xScale(d.population))
+    .attr("width", 0) // Inicia com largura 0
     .attr("height", yScale.bandwidth())
     .attr("fill", "steelblue")
     .on("mouseover", function (event, d) {
@@ -82,76 +97,109 @@ export function createBarChart(data) {
     })
     .on("mouseout", function () {
       tooltip.style("opacity", 0);
-    });
-
-  svg
-    .selectAll(".label")
-    .data(data)
-    .enter()
-    .append("text")
-    .attr("class", "label")
-    .attr("x", (d) => {
-      const barEnd = xScale(d.population);
-      const labelText = `${(d.population / 1000000).toFixed(1)} mi`;
-      const labelWidth = getTextWidth(labelText, "11px sans-serif"); // Alterado para 10px
-
-      // Se o rótulo não couber na barra, posiciona-o fora
-      return barEnd + labelWidth + 10 < width
-        ? barEnd + 10
-        : barEnd - labelWidth - 10;
     })
-    .attr("y", (d) => yScale(d.name) + yScale.bandwidth() / 2)
-    .attr("dy", ".35em")
-    .attr("text-anchor", "start")
-    .text((d) => {
-      const million = 1000000;
-      if (d.population >= million) {
-        return `${(d.population / million).toFixed(1)} mi`;
-      }
-      return d.population.toLocaleString();
-    })
-    .style("fill", "black")
-    .style("font-size", "11px") // Definindo o tamanho da fonte para 10px
-    .style("white-space", "pre-wrap") // Permitindo quebra de linha no rótulo
-    .on("mouseover", function (event, d) {
-      tooltip
-        .style("opacity", 1)
-        .html(
-          `<strong>${
-            d.name
-          }</strong><br>População: ${d.population.toLocaleString()}`
-        );
-    })
-    .on("mousemove", function (event) {
-      const tooltipWidth = tooltip.node().offsetWidth;
-      const tooltipHeight = tooltip.node().offsetHeight;
-      const mouseX = event.pageX;
-      const mouseY = event.pageY;
+    .transition() // Adiciona a animação
+    .duration(1000) // Duração de 1 segundo
+    .attr("width", (d) => xScale(d.population)) // Animação de largura das barras
+    .on("end", function () {
+      // Após a animação das barras, exibe os rótulos
+      svg
+        .selectAll(".label")
+        .data(data)
+        .enter()
+        .append("text")
+        .attr("class", "label")
+        .attr("x", (d) => xScale(d.population) + 5)
+        .attr("y", (d) => yScale(d.name) + yScale.bandwidth() / 2)
+        .attr("dy", ".35em")
+        .text((d) => abbreviateNumber(d.population))
+        .style("font-size", "11px")
+        .style("fill", "black")
+        .on("mouseover", function (event, d) {
+          tooltip
+            .style("opacity", 1)
+            .html(
+              `<strong>${
+                d.name
+              }</strong><br>População: ${d.population.toLocaleString()}`
+            );
+        })
+        .on("mousemove", function (event) {
+          const tooltipWidth = tooltip.node().offsetWidth;
+          const tooltipHeight = tooltip.node().offsetHeight;
+          const mouseX = event.pageX;
+          const mouseY = event.pageY;
 
-      let left = mouseX + 10;
-      if (mouseX + tooltipWidth + 10 > window.innerWidth) {
-        left = mouseX - tooltipWidth - 10;
-      }
+          let left = mouseX + 10;
+          if (mouseX + tooltipWidth + 10 > window.innerWidth) {
+            left = mouseX - tooltipWidth - 10;
+          }
 
-      tooltip
-        .style("left", left + "px")
-        .style("top", mouseY - tooltipHeight - 10 + "px");
-    })
-    .on("mouseout", function () {
-      tooltip.style("opacity", 0);
+          tooltip
+            .style("left", left + "px")
+            .style("top", mouseY - tooltipHeight - 10 + "px");
+        })
+        .on("mouseout", function () {
+          tooltip.style("opacity", 0);
+        });
     });
 
   svg
     .append("g")
     .call(d3.axisLeft(yScale))
     .selectAll("text")
-    .style("font-size", "12px");
+    .style("font-size", `${fontSize}px`)
+    .each(function (d) {
+      const text = d3.select(this);
+      const words = d.split(" ");
+      const x = text.attr("x");
+      const y = text.attr("y");
+      const dy = parseFloat(text.attr("dy")) || 0;
 
-  // Função para calcular a largura do texto (para ajustar o rótulo)
-  function getTextWidth(text, font) {
-    const canvas = document.createElement("canvas");
-    const context = canvas.getContext("2d");
-    context.font = font;
-    return context.measureText(text).width;
-  }
+      // Limpa o texto original
+      text.text(null);
+
+      // Adiciona um tspan para cada linha
+      let tspan = text
+        .append("tspan")
+        .attr("x", x)
+        .attr("y", y)
+        .attr("dy", `${dy}em`);
+
+      let line = [];
+      words.forEach((word) => {
+        line.push(word);
+        tspan.text(line.join(" "));
+        if (tspan.node().getComputedTextLength() > maxLabelWidth) {
+          line.pop();
+          tspan.text(line.join(" "));
+          line = [word];
+          tspan = text
+            .append("tspan")
+            .attr("x", x)
+            .attr("y", y)
+            .attr("dy", `${lineHeight}em`)
+            .text(word);
+        }
+      });
+    });
+
+  // Redimensiona o gráfico quando a janela for redimensionada
+  window.addEventListener("resize", function () {
+    const { containerWidth, containerHeight, width, height } =
+      calculateDimensions();
+    xScale.range([10, width]); // Atualiza a escala X
+    svg
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom);
+    chartContainer
+      .style("width", `${containerWidth}px`)
+      .style("height", `${containerHeight}px`);
+
+    // Atualiza as barras
+    svg.selectAll(".bar").attr("width", (d) => xScale(d.population));
+
+    // Atualiza os labels
+    svg.selectAll(".label").attr("x", (d) => xScale(d.population) + 5);
+  });
 }

@@ -99,7 +99,7 @@ export function createBarChart(data) {
       tooltip.style("opacity", 0);
     })
     .transition() // Adiciona a animação
-    .duration(1000) // Duração de 1 segundo
+    .duration(700) // Duração de 1 segundo
     .attr("width", (d) => xScale(d.population)) // Animação de largura das barras
     .on("end", function () {
       // Após a animação das barras, exibe os rótulos

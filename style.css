@@ -30,30 +30,29 @@ body {
 
 /* Filtros */
 #filters {
-    margin: 20px;
-    padding: 10px;
-    background-color: #fff;
-    border-radius: 5px;
-    display: flex;
-    gap: 10px;
-}
-
-#filters input,
-#filters button {
-    padding: 8px 15px;
+    background-color: #ffffff;
+    /* Fundo branco */
     border: 1px solid #ddd;
-    border-radius: 5px;
+    /* Borda sutil */
+    border-radius: 8px;
+    /* Cantos arredondados */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    /* Sombra para destaque */
+    padding: 15px;
+    /* Espaçamento interno */
 }
 
+/* Botões */
 #filters button {
-    cursor: pointer;
-    background-color: #4caf50;
-    color: white;
-    border: none;
+    font-size: 14px;
+    /* Tamanho de texto consistente */
+    flex-grow: 1;
+    /* Botões com largura igual */
 }
 
-#filters button:hover {
-    background-color: #45a049;
+/* Dropdown */
+#filters select {
+    font-size: 14px;
 }
 
 /* CSS para o título rotacionado */
@@ -65,11 +64,11 @@ body {
 
 #chart-title {
     position: absolute;
-    left: -20px;
+    left: -15px;
     /* Ajuste a distância conforme necessário */
     top: 50%;
     transform: translateY(-50%) rotate(270deg);
-    font-size: 14px;
+    font-size: 12px;
     font-weight: bold;
 }
 
@@ -86,18 +85,8 @@ body {
     }
 
     #bar-chart-container {
-        height: 400px;
-        /* Ajuste a altura em telas menores */
+        height: 250px;
+        /* Altura menor em telas pequenas */
     }
 
-    #filters {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    #filters input,
-    #filters button {
-        width: 100%;
-        margin-bottom: 10px;
-    }
 }

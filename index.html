@@ -16,30 +16,19 @@
   <body>
     <!-- Filtros -->
     <div id="filters" class="container my-3">
-      <div class="row">
-        <div class="col-12 col-md-4">
-          <input
-            type="number"
-            id="start-date"
-            class="form-control"
-            placeholder="Ano Início"
-          />
+      <div class="row align-items-center">
+        <!-- Dropdown de seleção de país -->
+        <div class="col-12 col-md-8 mb-3 mb-md-0">
+          <select id="country-select" class="form-select form-select-sm">
+            <option value="">Selecione um País</option>
+          </select>
         </div>
-        <div class="col-12 col-md-4">
-          <input
-            type="number"
-            id="end-date"
-            class="form-control"
-            placeholder="Ano Fim"
-          />
-        </div>
-        <div class="col-12 col-md-4">
-          <div class="d-flex justify-content-between">
-            <button id="filter-button" class="btn btn-primary">Filtrar</button>
-            <button id="clear-filters" class="btn btn-secondary">
-              Limpar Filtros
-            </button>
-          </div>
+        <!-- Botões de ação -->
+        <div class="col-12 col-md-4 d-flex gap-2">
+          <button id="filter-button" class="btn btn-success">Filtrar</button>
+          <button id="clear-filters" class="btn btn-secondary btn-sm">
+            Limpar Filtros
+          </button>
         </div>
       </div>
     </div>

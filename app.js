@@ -1,8 +1,5 @@
 // Importando as funções de gráficos
 import { createBarChart } from "./graficos/Bar.js";
-import { createLineChart } from "./graficos/Line.js";
-import { createPieChart } from "./graficos/Pie.js";
-import { createCombinedChart } from "./graficos/Bar_Line.js"; // Certifique-se de que este caminho está correto
 
 // Função para buscar os dados da API REST Countries
 async function fetchData() {
@@ -34,30 +31,27 @@ fetchData().then(function (data) {
     countrySelect.append("option").text(country).attr("value", country);
   });
 
-  // Criando os gráficos com todos os dados inicialmente
+  // Criando o gráfico de barras com todos os dados inicialmente
   createBarChart(data);
-  createLineChart(data);
-  createPieChart(data);
-  createCombinedChart(data);
 
-  // Adicionando o evento de mudança no dropdown
-  d3.select("#country-select").on("change", function () {
-    const selectedCountry = d3.select(this).node().value;
+  // Evento para o botão de filtrar
+  d3.select("#filter-button").on("click", function () {
+    const selectedCountry = d3.select("#country-select").node().value;
 
     // Filtrando os dados com base no país selecionado
     const filteredData = selectedCountry
       ? data.filter((d) => d.name === selectedCountry)
       : data;
 
-    // Limpando os gráficos anteriores
+    // Limpando o gráfico de barras anterior e recriando com os dados filtrados
     d3.select("#bar-chart-container").html("");
-    d3.select("#line-chart-container").html("");
-    d3.select("#pie-chart-container").html("");
-
-    // Recriando os gráficos com os dados filtrados
     createBarChart(filteredData);
-    createLineChart(filteredData);
-    createPieChart(filteredData);
-    createCombinedChart(filteredData);
+  });
+
+  // Evento para o botão de limpar filtros
+  d3.select("#clear-filters").on("click", function () {
+    d3.select("#country-select").node().value = ""; // Limpa o dropdown
+    d3.select("#bar-chart-container").html(""); // Limpa o gráfico de barras
+    createBarChart(data); // Recria o gráfico com todos os dados
   });
 });

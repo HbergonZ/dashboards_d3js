@@ -78,6 +78,16 @@ body {
     height: 100%;
 }
 
+#country-checkbox-list {
+    max-height: 200px;
+    /* Limitar a altura do dropdown */
+    overflow-y: auto;
+    /* Adicionar barra de rolagem vertical */
+    padding: 10px;
+    width: 100%;
+    /* Garantir que o dropdown ocupe toda a largura disponível */
+}
+
 /* Responsividade */
 @media (max-width: 768px) {
     #dashboard {

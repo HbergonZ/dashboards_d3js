@@ -16,17 +16,40 @@
   <body>
     <!-- Filtros -->
     <div id="filters" class="container my-3">
-      <div class="row align-items-center">
-        <!-- Dropdown de seleção de país -->
+      <div class="row">
+        <!-- Dropdown de seleção múltipla -->
         <div class="col-12 col-md-8 mb-3 mb-md-0">
-          <select id="country-select" class="form-select form-select-sm">
-            <option value="">Selecione um País</option>
-          </select>
+          <div class="dropdown">
+            <button
+              class="btn btn-secondary dropdown-toggle w-100"
+              type="button"
+              id="multiSelectDropdown"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              Selecione País(es)
+            </button>
+            <ul class="dropdown-menu" id="country-checkbox-list">
+              <!-- Barra de busca -->
+              <li>
+                <input
+                  type="search"
+                  id="search-input"
+                  class="form-control"
+                  placeholder="Buscar país..."
+                  aria-label="Buscar país"
+                />
+              </li>
+              <!-- Checkboxes serão adicionados dinamicamente -->
+            </ul>
+          </div>
         </div>
         <!-- Botões de ação -->
         <div class="col-12 col-md-4 d-flex gap-2">
-          <button id="filter-button" class="btn btn-success">Filtrar</button>
-          <button id="clear-filters" class="btn btn-secondary btn-sm">
+          <button id="filter-button" class="btn btn-primary btn-sm w-100">
+            Filtrar
+          </button>
+          <button id="clear-filters" class="btn btn-secondary btn-sm w-100">
             Limpar Filtros
           </button>
         </div>
@@ -68,6 +91,8 @@
       </div>
     </div>
 
+    <!-- Incluindo Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Importando o app.js -->
     <script type="module" src="app.js"></script>
   </body>

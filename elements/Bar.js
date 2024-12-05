@@ -7,7 +7,7 @@ export function createBarChart(data, xValue, yValue) {
   // Função para calcular as dimensões do gráfico
   function calculateDimensions() {
     const containerWidth = container.clientWidth; // Largura do container
-    const containerHeight = 300; // Altura do container fixa para o gráfico
+    const containerHeight = container.clientHeight; // Altura do container fixa para o gráfico
     const width = containerWidth - margin.left - margin.right;
     const height = data.length * 30;
 

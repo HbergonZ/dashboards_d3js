@@ -1,5 +1,11 @@
 // Importando as funções de gráficos
 import { createBarChart } from "./elements/Bar.js";
+// Importando as funções de filtro
+import {
+  populateCountryCheckboxes,
+  filterCountries,
+  getSelectedCountries,
+} from "./elements/Filtros.js";
 
 // Função para buscar os dados da API REST Countries
 async function fetchData() {
@@ -19,58 +25,6 @@ async function fetchData() {
   return formattedData;
 }
 
-// Função para popular a lista de checkboxes
-function populateCountryCheckboxes(data) {
-  const countryList = d3.select("#country-checkbox-list");
-  const uniqueCountries = [...new Set(data.map((d) => d.name))];
-  uniqueCountries.sort(); // Ordenando alfabeticamente
-
-  uniqueCountries.forEach((country) => {
-    const checkboxItem = countryList
-      .append("li")
-      .attr("class", "dropdown-item");
-
-    checkboxItem
-      .append("input")
-      .attr("type", "checkbox")
-      .attr("class", "form-check-input me-2")
-      .attr("id", `checkbox-${country}`)
-      .attr("value", country);
-
-    checkboxItem
-      .append("label")
-      .attr("for", `checkbox-${country}`)
-      .text(country);
-  });
-}
-
-// Função para filtrar países conforme o valor digitado
-function filterCountries() {
-  const searchValue = document
-    .getElementById("search-input")
-    .value.toLowerCase();
-
-  d3.selectAll("#country-checkbox-list .dropdown-item").each(function () {
-    const country = d3.select(this).select("label").text().toLowerCase();
-
-    // Exibe ou oculta o item dependendo se corresponde à busca
-    if (country.includes(searchValue)) {
-      d3.select(this).style("display", "flex");
-    } else {
-      d3.select(this).style("display", "none");
-    }
-  });
-}
-
-// Função para obter os países selecionados
-function getSelectedCountries() {
-  const selected = [];
-  d3.selectAll("#country-checkbox-list input:checked").each(function () {
-    selected.push(this.value);
-  });
-  return selected;
-}
-
 // Usando os dados após carregá-los da API
 fetchData().then(function (data) {
   console.log(data); // Verificando os dados carregados
@@ -86,7 +40,7 @@ fetchData().then(function (data) {
     });
 
   // Criar o gráfico de barras com todos os dados inicialmente
-  createBarChart(data);
+  createBarChart(data, "population", "name");
 
   // Evento para o botão de filtrar
   d3.select("#filter-button").on("click", function () {
@@ -99,7 +53,7 @@ fetchData().then(function (data) {
 
     // Limpando o gráfico de barras anterior e recriando com os dados filtrados
     d3.select("#bar-chart-container").html("");
-    createBarChart(filteredData);
+    createBarChart(filteredData, "population", "name"); // Incluindo os argumentos xValue e yValue
   });
 
   // Evento para o botão de limpar filtros
@@ -109,6 +63,6 @@ fetchData().then(function (data) {
 
     // Recriar o gráfico com todos os dados
     d3.select("#bar-chart-container").html("");
-    createBarChart(data);
+    createBarChart(data, "population", "name"); // Incluindo os argumentos xValue e yValue
   });
 });

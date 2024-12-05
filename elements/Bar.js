@@ -1,4 +1,4 @@
-export function createBarChart(data) {
+export function createBarChart(data, xValue, yValue) {
   const maxLabelWidth = 150; // Largura máxima do rótulo no eixo Y
   const lineHeight = 1.1; // Altura da linha (em unidades em)
   const fontSize = 12; // Tamanho da fonte em pixels
@@ -21,7 +21,7 @@ export function createBarChart(data) {
     calculateDimensions();
 
   // Ordenar os dados pelo valor de população
-  data.sort((a, b) => b.population - a.population);
+  data.sort((a, b) => b[xValue] - a[xValue]);
 
   const chartContainer = d3
     .select("#bar-chart-container")
@@ -49,12 +49,12 @@ export function createBarChart(data) {
 
   const xScale = d3
     .scaleLinear()
-    .domain([0, d3.max(data, (d) => d.population) * 1.05]) // Adiciona 5% de margem ao limite máximo
+    .domain([0, d3.max(data, (d) => d[xValue]) * 1.05]) // Adiciona 5% de margem ao limite máximo
     .range([10, width]); // Adiciona 10px de margem inicial na escala X
 
   const yScale = d3
     .scaleBand()
-    .domain(data.map((d) => d.name))
+    .domain(data.map((d) => d[yValue]))
     .range([0, height])
     .padding(0.1);
 
@@ -62,12 +62,12 @@ export function createBarChart(data) {
 
   svg
     .selectAll(".bar")
-    .data(data.filter((d) => d.population > 0)) // Filtra os países com população maior que 0
+    .data(data.filter((d) => d[xValue] > 0)) // Filtra os itens com valor maior que 0
     .enter()
     .append("rect")
     .attr("class", "bar")
     .attr("x", 0)
-    .attr("y", (d) => yScale(d.name))
+    .attr("y", (d) => yScale(d[yValue]))
     .attr("width", 0) // Inicia com largura 0
     .attr("height", yScale.bandwidth())
     .attr("fill", "steelblue")
@@ -75,9 +75,9 @@ export function createBarChart(data) {
       tooltip
         .style("opacity", 1)
         .html(
-          `<strong>${
-            d.name
-          }</strong><br>População: ${d.population.toLocaleString()}`
+          `<strong>${d[yValue]}</strong><br>${xValue}: ${d[
+            xValue
+          ].toLocaleString()}`
         );
     })
     .on("mousemove", function (event) {
@@ -100,7 +100,7 @@ export function createBarChart(data) {
     })
     .transition() // Adiciona a animação
     .duration(700) // Duração de 1 segundo
-    .attr("width", (d) => xScale(d.population)) // Animação de largura das barras
+    .attr("width", (d) => xScale(d[xValue])) // Animação de largura das barras
     .on("end", function () {
       // Após a animação das barras, exibe os rótulos
       svg
@@ -109,19 +109,19 @@ export function createBarChart(data) {
         .enter()
         .append("text")
         .attr("class", "label")
-        .attr("x", (d) => xScale(d.population) + 5)
-        .attr("y", (d) => yScale(d.name) + yScale.bandwidth() / 2)
+        .attr("x", (d) => xScale(d[xValue]) + 5)
+        .attr("y", (d) => yScale(d[yValue]) + yScale.bandwidth() / 2)
         .attr("dy", ".35em")
-        .text((d) => abbreviateNumber(d.population))
+        .text((d) => abbreviateNumber(d[xValue]))
         .style("font-size", "11px")
         .style("fill", "black")
         .on("mouseover", function (event, d) {
           tooltip
             .style("opacity", 1)
             .html(
-              `<strong>${
-                d.name
-              }</strong><br>População: ${d.population.toLocaleString()}`
+              `<strong>${d[yValue]}</strong><br>${xValue}: ${d[
+                xValue
+              ].toLocaleString()}`
             );
         })
         .on("mousemove", function (event) {
@@ -197,9 +197,9 @@ export function createBarChart(data) {
       .style("height", `${containerHeight}px`);
 
     // Atualiza as barras
-    svg.selectAll(".bar").attr("width", (d) => xScale(d.population));
+    svg.selectAll(".bar").attr("width", (d) => xScale(d[xValue]));
 
     // Atualiza os labels
-    svg.selectAll(".label").attr("x", (d) => xScale(d.population) + 5);
+    svg.selectAll(".label").attr("x", (d) => xScale(d[xValue]) + 5);
   });
 }

@@ -2,7 +2,14 @@ export function createBarChart(containerId, data, xValue, yValue) {
   const maxLabelWidth = 150; // Largura máxima do rótulo no eixo Y
   const lineHeight = 1.1; // Altura da linha (em unidades em)
   const fontSize = 12; // Tamanho da fonte em pixels
+  console.log(`Criando gráfico para o contêiner: ${containerId}`);
   const container = document.getElementById(containerId);
+  console.log(container); // Verifique se o contêiner existe corretamente
+
+  if (!container) {
+    console.error(`Container com id ${containerId} não encontrado!`);
+    return;
+  }
 
   // Função para calcular as dimensões do gráfico
   function calculateDimensions() {

@@ -67,10 +67,11 @@ body {
     /* Permite que a altura seja definida pelo pai */
 }
 
-#bar-chart-container {
+.grafico {
     width: 100%;
     height: 100%;
 }
+
 
 #chart-title {
     position: absolute;

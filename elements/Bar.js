@@ -1,8 +1,8 @@
-export function createBarChart(data, xValue, yValue) {
+export function createBarChart(containerId, data, xValue, yValue) {
   const maxLabelWidth = 150; // Largura máxima do rótulo no eixo Y
   const lineHeight = 1.1; // Altura da linha (em unidades em)
   const fontSize = 12; // Tamanho da fonte em pixels
-  const container = document.getElementById("bar-chart-container");
+  const container = document.getElementById(containerId);
 
   // Função para calcular as dimensões do gráfico
   function calculateDimensions() {
@@ -24,7 +24,7 @@ export function createBarChart(data, xValue, yValue) {
   data.sort((a, b) => b[xValue] - a[xValue]);
 
   const chartContainer = d3
-    .select("#bar-chart-container")
+    .select(`#${containerId}`)
     .html("") // Limpa o conteúdo anterior
     .append("div")
     .style("width", `${containerWidth}px`)

@@ -40,7 +40,7 @@ fetchData().then(function (data) {
     });
 
   // Criar o gráfico de barras com todos os dados inicialmente
-  createBarChart(data, "population", "name");
+  createBarChart("bar-chart-container", data, "population", "name");
 
   // Evento para o botão de filtrar
   d3.select("#filter-button").on("click", function () {
@@ -53,7 +53,7 @@ fetchData().then(function (data) {
 
     // Limpando o gráfico de barras anterior e recriando com os dados filtrados
     d3.select("#bar-chart-container").html("");
-    createBarChart(filteredData, "population", "name"); // Incluindo os argumentos xValue e yValue
+    createBarChart("bar-chart-container", filteredData, "population", "name"); // Incluindo os argumentos xValue e yValue
   });
 
   // Evento para o botão de limpar filtros
@@ -63,6 +63,6 @@ fetchData().then(function (data) {
 
     // Recriar o gráfico com todos os dados
     d3.select("#bar-chart-container").html("");
-    createBarChart(data, "population", "name"); // Incluindo os argumentos xValue e yValue
+    createBarChart("bar-chart-container", data, "population", "name"); // Incluindo os argumentos xValue e yValue
   });
 });

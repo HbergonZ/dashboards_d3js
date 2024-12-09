@@ -2,13 +2,13 @@
 // IMPORTAÇÃO DE ELEMENTOS
 //--------------------------------------------------------------------
 // Importando as funções de gráficos
-import { createBarChart } from "./elements/Bar.js";
+import { createBarChart } from "./graph/examples/Bar.js";
 // Importando as funções de filtro
 import {
   populateCountryCheckboxes,
   filterCountries,
   getSelectedCountries,
-} from "./elements/Filtros.js";
+} from "./filter/Filtros.js";
 
 //--------------------------------------------------------------------
 // CONEXÃO COM API E FORMATAÇÃO DOS DADOS
@@ -45,16 +45,6 @@ fetchData().then(function (data) {
   // Verificando se o container 2 existe
   console.log(document.getElementById("bar-chart-container-2"));
 
-  // Popular a lista de checkboxes
-  populateCountryCheckboxes(data);
-
-  // Adicionar o evento de filtro para a barra de busca
-  document
-    .getElementById("search-input")
-    .addEventListener("input", function () {
-      filterCountries(); // Chama a função de filtro
-    });
-
   // Criar o gráfico de barras com todos os dados inicialmente
   createBarChart("bar-chart-container", data, "population", "name");
   createBarChart("bar-chart-container-2", data, "population", "name");
@@ -62,6 +52,14 @@ fetchData().then(function (data) {
   //--------------------------------------------------------------------
   // APLICAÇÃO DE FILTROS
   //--------------------------------------------------------------------
+  // Popular a lista de checkboxes
+  populateCountryCheckboxes(data);
+  // Adicionar o evento de filtro para a barra de busca
+  document
+    .getElementById("search-input")
+    .addEventListener("input", function () {
+      filterCountries(); // Chama a função de filtro
+    });
   // Evento para o botão de filtrar
   d3.select("#filter-button").on("click", function () {
     const selectedCountries = getSelectedCountries();

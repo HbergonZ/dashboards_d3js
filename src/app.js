@@ -1,9 +1,16 @@
 //--------------------------------------------------------------------
 // IMPORTAÇÃO DE ELEMENTOS
 //--------------------------------------------------------------------
-// Importando as funções de gráficos
+/* Gráfico de Barra dos Exemplos */
 import { createBarChart } from "./graph/examples/Bar.js";
-// Importando as funções de filtro
+
+/* Gráfico de Linha dos Exemplos */
+import { createLineChart } from "./graph/examples/Line.js";
+
+/* Consultas */
+import { getTop10ByKey, fullDataframe } from "./database/queries.js";
+
+/* Filtros */
 import {
   populateCountryCheckboxes,
   filterCountries,
@@ -11,86 +18,68 @@ import {
 } from "./filter/Filtros.js";
 
 //--------------------------------------------------------------------
-// CONEXÃO COM API E FORMATAÇÃO DOS DADOS
+// FUNÇÕES AUXILIARES
 //--------------------------------------------------------------------
-// Função para buscar os dados da API REST Countries
-async function fetchData() {
-  const url = "https://restcountries.com/v3.1/all"; // URL da API REST Countries
-  try {
-    const response = await fetch(url);
-    if (!response.ok) throw new Error("Erro ao buscar dados da API.");
-    const data = await response.json();
+function updateCharts(filteredData) {
+  d3.select("#bar-chart-container").html("");
+  createBarChart("bar-chart-container", filteredData, "population", "name");
 
-    return data.map((country) => ({
-      name: country.name.common,
-      population: country.population,
-      area: country.area,
-      region: country.region,
-      languages: Object.values(country.languages || {}),
-    }));
-  } catch (error) {
-    console.error("Erro ao carregar dados:", error);
-    return [];
-  }
+  d3.select("#bar-chart-container-2").html("");
+  const filteredByLanguages = filteredData.filter(
+    (d) => d.languages.length > 0
+  );
+  createBarChart(
+    "bar-chart-container-2",
+    filteredByLanguages,
+    "population",
+    "languages"
+  );
+
+  console.log(
+    "Dados filtrados para gráfico de barra 2:",
+    filteredData.filter((d) => d.languages.length > 0)
+  );
+
+  d3.select("#line-chart-container").html("");
+  const top10Population = getTop10ByKey(filteredData, "population");
+  createLineChart(
+    "line-chart-container",
+    top10Population,
+    "name",
+    "population"
+  );
+}
+
+function applyFilters(data, selectedCountries) {
+  return selectedCountries.length
+    ? data.filter((d) => selectedCountries.includes(d.name))
+    : data;
 }
 
 //--------------------------------------------------------------------
-// CARREGAMENTO DE DADOS DA API
+// CARREGAMENTO INICIAL
 //--------------------------------------------------------------------
+(async function () {
+  let data = await fullDataframe();
+  let filteredData = data; // Variável para armazenar o dataset filtrado
 
-// Usando os dados após carregá-los da API
-fetchData().then(function (data) {
-  console.log(data); // Verificando os dados carregados
-
-  // Verificando se o container 2 existe
-  console.log(document.getElementById("bar-chart-container-2"));
-
-  // Criar o gráfico de barras com todos os dados inicialmente
-  createBarChart("bar-chart-container", data, "population", "name");
-  createBarChart("bar-chart-container-2", data, "population", "name");
-
-  //--------------------------------------------------------------------
-  // APLICAÇÃO DE FILTROS
-  //--------------------------------------------------------------------
-  // Popular a lista de checkboxes
+  // Popular checkboxes
   populateCountryCheckboxes(data);
-  // Adicionar o evento de filtro para a barra de busca
-  document
-    .getElementById("search-input")
-    .addEventListener("input", function () {
-      filterCountries(); // Chama a função de filtro
-    });
-  // Evento para o botão de filtrar
-  d3.select("#filter-button").on("click", function () {
+
+  // Inicializar gráficos com dataset completo
+  updateCharts(filteredData);
+
+  // Eventos de Filtros
+  document.getElementById("filter-button").addEventListener("click", () => {
     const selectedCountries = getSelectedCountries();
-
-    // Filtrar os dados com base nos países selecionados
-    const filteredData = selectedCountries.length
-      ? data.filter((d) => selectedCountries.includes(d.name))
-      : data;
-
-    // Atualizar os gráficos com os dados filtrados
-    d3.select("#bar-chart-container").html("");
-    createBarChart("bar-chart-container", filteredData, "population", "name");
-
-    d3.select("#bar-chart-container-2").html("");
-    createBarChart(
-      "bar-chart-container-2",
-      filteredData,
-      "population",
-      "languages"
-    );
+    filteredData = applyFilters(data, selectedCountries); // Atualizar `filteredData`
+    updateCharts(filteredData);
   });
 
-  // Evento para o botão de limpar filtros
-  d3.select("#clear-filters").on("click", function () {
-    // Desmarcar todos os checkboxes
+  // Evento para limpar filtros
+  document.getElementById("clear-filters").addEventListener("click", () => {
     d3.selectAll("#country-checkbox-list input").property("checked", false);
-
-    // Recriar o gráfico com todos os dados
-    d3.select("#bar-chart-container").html("");
-    createBarChart("bar-chart-container", data, "population", "name"); // Incluindo os argumentos xValue e yValue
-    d3.select("#bar-chart-container-2").html("");
-    createBarChart("bar-chart-container-2", data, "population", "name");
+    filteredData = data; // Resetar para o dataset original
+    updateCharts(filteredData);
   });
-});
+})();

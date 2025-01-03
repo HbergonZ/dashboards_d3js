@@ -158,7 +158,8 @@ export function createBarChart(containerId, data, xValue, yValue) {
     .style("font-size", `${fontSize}px`)
     .each(function (d) {
       const text = d3.select(this);
-      const words = d.split(" ");
+      const value = String(d); // Converte d para string
+      const words = value.split(" "); // Agora isso funciona sem erros
       const x = text.attr("x");
       const y = text.attr("y");
       const dy = parseFloat(text.attr("dy")) || 0;

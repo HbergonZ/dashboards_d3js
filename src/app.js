@@ -63,6 +63,11 @@ function applyFilters(data, selectedCountries) {
   let data = await fullDataframe();
   let filteredData = data; // Variável para armazenar o dataset filtrado
 
+  // Adicionar evento para buscar países na barra de pesquisa
+  document
+    .getElementById("search-input")
+    .addEventListener("input", filterCountries);
+
   // Popular checkboxes
   populateCountryCheckboxes(data);
 

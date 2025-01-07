@@ -5,7 +5,11 @@
 import { createBarChart } from "./graph/examples/Bar.js";
 
 /* Gráfico de Linha dos Exemplos */
-import { createLineChart } from "./graph/examples/Line.js";
+/* import { createLineChart } from "./graph/examples/Line.js"; */
+import { createLineChart } from "./graph/testes/Line.js";
+
+/* Gráfico de Linha Thomas */
+/* import { createLineChart } from "./graph/elements/Line.js"; */
 
 /* Consultas */
 import { getTop10ByKey, fullDataframe } from "./database/queries.js";
@@ -35,19 +39,10 @@ function updateCharts(filteredData) {
     "languages"
   );
 
-  console.log(
-    "Dados filtrados para gráfico de barra 2:",
-    filteredData.filter((d) => d.languages.length > 0)
-  );
-
   d3.select("#line-chart-container").html("");
-  const top10Population = getTop10ByKey(filteredData, "population");
-  createLineChart(
-    "line-chart-container",
-    top10Population,
-    "name",
-    "population"
-  );
+  const top10Population = getTop10ByKey(filteredData, "area");
+  console.log("Top 10 por população:", top10Population);
+  createLineChart("line-chart-container", top10Population, "name", "area");
 }
 
 function applyFilters(data, selectedCountries) {

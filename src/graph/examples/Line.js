@@ -1,12 +1,36 @@
 export function createLineChart(containerId, data, xValue, yValue) {
-  const container = d3.select(`#${containerId}`);
-  container.html(""); // Limpa o contêiner
+  const maxLabelWidth = 150; // Largura máxima do rótulo no eixo Y
+  const lineHeight = 1.1; // Altura da linha (em unidades em)
+  const fontSize = 12; // Tamanho da fonte em pixels
 
-  const width = 400;
-  const height = 300;
-  const margin = { top: 20, right: 30, bottom: 40, left: 50 };
+  console.log(`Criando gráfico para o contêiner: ${containerId}`);
+  const container = document.getElementById(containerId);
+  console.log(container); // Verifique se o contêiner existe corretamente
 
-  const svg = container
+  if (!container) {
+    console.error(`Container com id ${containerId} não encontrado!`);
+    return;
+  }
+
+  // Função para calcular as dimensões do gráfico
+  function calculateDimensions() {
+    const containerWidth = container.clientWidth; // Largura do container
+    const containerHeight = container.clientHeight; // Altura do container fixa para o gráfico
+    const width = containerWidth - margin.left - margin.right;
+    const height = data.length * 25; // A altura será dinâmica dependendo do número de dados
+
+    return { containerWidth, containerHeight, width, height };
+  }
+
+  const margin = { top: 10, right: 10, bottom: 20, left: maxLabelWidth - 50 };
+
+  // Calcula as dimensões do gráfico com base no tamanho atual do container
+  const { containerWidth, containerHeight, width, height } =
+    calculateDimensions();
+
+  const svg = d3
+    .select(`#${containerId}`)
+    .html("") // Limpa o contêiner
     .append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)

@@ -56,7 +56,7 @@ body {
 }
 
 /* CSS para o título rotacionado */
-#bar-chart-container-wrapper {
+#container-wrapper {
     position: relative;
     width: 100%;
     height: 100%;

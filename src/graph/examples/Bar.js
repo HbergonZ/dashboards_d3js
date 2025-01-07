@@ -77,7 +77,8 @@ export function createBarChart(containerId, data, xValue, yValue) {
     .attr("y", (d) => yScale(d[yValue]))
     .attr("width", 0) // Inicia com largura 0
     .attr("height", yScale.bandwidth())
-    .attr("fill", "steelblue")
+    .attr("fill", "rgba(70, 130, 180,0.5)")
+    .attr("stroke", "steelblue")
     .on("mouseover", function (event, d) {
       tooltip
         .style("opacity", 1)

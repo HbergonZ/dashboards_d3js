@@ -9,90 +9,95 @@ export function createLineChart(containerId, data, xValue, yValue) {
     return;
   }
 
+  const margin = { top: 10, right: 10, bottom: 60, left: 10 };
+
   function calculateDimensions() {
     const containerWidth = container.clientWidth;
     const containerHeight = container.clientHeight;
-    const width = containerWidth - margin.left - margin.right;
-    const height = 290 - margin.bottom;
 
-    return { containerWidth, containerHeight, width, height };
+    const width = containerWidth - margin.left - margin.right;
+    const height = containerHeight - margin.top - margin.bottom;
+
+    return { width, height };
   }
 
-  const margin = { top: 10, right: 10, bottom: 50, left: 100 };
+  const { width, height } = calculateDimensions();
 
-  const { containerWidth, containerHeight, width, height } =
-    calculateDimensions();
+  const tempSvg = d3.select("body").append("svg");
+  const yScaleTemp = d3
+    .scaleLinear()
+    .domain([0, d3.max(data, (d) => d[yValue])])
+    .range([height, 0]);
+
+  const yAxisTemp = tempSvg
+    .append("g")
+    .call(d3.axisLeft(yScaleTemp).ticks(5))
+    .style("font-size", `${fontSize}px`);
+
+  const maxYLabelWidth = d3.max(
+    yAxisTemp.selectAll("text").nodes(),
+    (node) => node.getBBox().width
+  );
+
+  tempSvg.remove();
+
+  const adjustedWidth = width - maxYLabelWidth;
 
   const svg = d3
     .select(`#${containerId}`)
     .html("")
     .append("svg")
-    .attr("width", width + margin.left + margin.right)
+    .attr("width", adjustedWidth + margin.left + margin.right + maxYLabelWidth)
     .attr("height", height + margin.top + margin.bottom)
     .append("g")
-    .attr("transform", `translate(${margin.left},${margin.top})`);
+    .attr(
+      "transform",
+      `translate(${margin.left + maxYLabelWidth},${margin.top})`
+    );
 
-  // Verifica se os valores do eixo X são datas ou não
   const isDate = !isNaN(Date.parse(data[0][xValue]));
 
   let xScale;
 
   if (isDate) {
-    // Usando escala de tempo se for data
     xScale = d3
       .scaleTime()
       .domain([
-        d3.min(data, (d) => new Date(d[xValue])),
-        d3.max(data, (d) => new Date(d[xValue])),
+        new Date(data[0][xValue]),
+        new Date(data[data.length - 1][xValue]),
       ])
-      .range([0, width]);
+      .range([0, adjustedWidth]);
   } else {
-    // Usando escala de pontos se não for data
     xScale = d3
       .scalePoint()
       .domain(data.map((d) => d[xValue]))
-      .range([0, width]);
+      .range([0, adjustedWidth])
+      .padding(0.5);
   }
 
   const yScale = d3
     .scaleLinear()
     .domain([0, d3.max(data, (d) => d[yValue])])
+    .nice()
     .range([height, 0]);
-
-  function abbreviateValue(value) {
-    if (value.length > 10) {
-      return `${value.substring(0, 7)}...`;
-    }
-    return value;
-  }
-
-  const tickSpacing = width / data.length;
 
   const xAxis = svg
     .append("g")
     .attr("transform", `translate(0,${height})`)
     .call(
-      isDate
-        ? d3.axisBottom(xScale).tickFormat(d3.timeFormat("%b %d")) // Formatação para datas
-        : d3.axisBottom(xScale).tickFormat(abbreviateValue) // Abreviação se não for data
+      d3
+        .axisBottom(xScale)
+        .tickFormat(isDate ? d3.timeFormat("%b %d") : (d) => d)
     );
 
   xAxis
     .selectAll("text")
-    .attr("transform", function (d) {
-      return tickSpacing < 50 ? "rotate(-45)" : "";
-    })
+    .attr("transform", `rotate(-45)`)
     .style("text-anchor", "end");
 
-  svg.append("g").call(d3.axisLeft(yScale));
+  svg.append("g").call(d3.axisLeft(yScale).ticks(5));
 
   const tooltip = d3.select("#tooltip");
-
-  const formatValue = d3.format(",.2f");
-
-  function formatValueWithComma(value) {
-    return formatValue(value).replace(".", ",");
-  }
 
   const linePath = svg
     .append("path")
@@ -140,25 +145,15 @@ export function createLineChart(containerId, data, xValue, yValue) {
       tooltip
         .style("opacity", 1)
         .html(
-          `<strong>${d[xValue]}</strong><br><span>Valor: ${formatValue(
-            d[yValue]
-          )}</span>`
+          `<strong>${d[xValue]}</strong><br><span>Valor: ${d[yValue]}</span>`
         )
         .style("left", `${event.pageX + 10}px`)
         .style("top", `${event.pageY - 40}px`);
     })
     .on("mousemove", function (event) {
-      const tooltipWidth = tooltip.node().offsetWidth;
-      const tooltipHeight = tooltip.node().offsetHeight;
-
-      let left = event.pageX + 10;
-      if (event.pageX + tooltipWidth + 10 > window.innerWidth) {
-        left = event.pageX - tooltipWidth - 10;
-      }
-
       tooltip
-        .style("left", left + "px")
-        .style("top", event.pageY - tooltipHeight - 10 + "px");
+        .style("left", `${event.pageX + 10}px`)
+        .style("top", `${event.pageY - 40}px`);
     })
     .on("mouseout", function () {
       tooltip.style("opacity", 0);

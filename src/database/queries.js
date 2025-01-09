@@ -1,5 +1,6 @@
 // Importar a função fetchData que busca os dados da API
 import { fetchData } from "./database.js";
+import { fetchLocalData } from "./database.js";
 
 // Função para obter o Top 10 por um critério específico
 export function getTop10ByKey(data, key) {
@@ -15,6 +16,12 @@ export function getTop10ByKey(data, key) {
 // Função para trazer todos os dados
 export async function fullDataframe() {
   const data = await fetchData();
+  return data;
+}
+
+// Função para trazer todos os dados locais
+export async function fullLocalDataframe() {
+  const data = await fetchLocalData();
   return data;
 }
 

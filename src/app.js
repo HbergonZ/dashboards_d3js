@@ -5,14 +5,17 @@
 import { createBarChart } from "./graph/examples/Bar.js";
 
 /* Gráfico de Linha dos Exemplos */
-/* import { createLineChart } from "./graph/examples/Line.js"; */
-import { createLineChart } from "./graph/testes/Line.js";
+import { createLineChart } from "./graph/examples/Line.js";
 
 /* Gráfico de Linha Thomas */
 /* import { createLineChart } from "./graph/elements/Line.js"; */
 
 /* Consultas */
-import { getTop10ByKey, fullDataframe } from "./database/queries.js";
+import {
+  getTop10ByKey,
+  fullDataframe,
+  fullLocalDataframe,
+} from "./database/queries.js";
 
 /* Filtros */
 import {
@@ -28,21 +31,12 @@ function updateCharts(filteredData) {
   d3.select("#bar-chart-container").html("");
   createBarChart("bar-chart-container", filteredData, "population", "name");
 
-  d3.select("#bar-chart-container-2").html("");
-  const filteredByLanguages = filteredData.filter(
-    (d) => d.languages.length > 0
-  );
-  createBarChart(
-    "bar-chart-container-2",
-    filteredByLanguages,
-    "population",
-    "languages"
-  );
-
-  d3.select("#line-chart-container").html("");
   const top10Population = getTop10ByKey(filteredData, "area");
   console.log("Top 10 por população:", top10Population);
-  createLineChart("line-chart-container", top10Population, "name", "area");
+  createLineChart("line-chart-container", top10Population, "name", [
+    "population",
+    "area",
+  ]);
 }
 
 function applyFilters(data, selectedCountries) {
@@ -56,6 +50,7 @@ function applyFilters(data, selectedCountries) {
 //--------------------------------------------------------------------
 (async function () {
   let data = await fullDataframe();
+  console.log("Dados recebidos para updateCharts:", data);
   let filteredData = data; // Variável para armazenar o dataset filtrado
 
   // Adicionar evento para buscar países na barra de pesquisa

@@ -1,6 +1,11 @@
-export function createLineChart(containerId, data, xValue, yValues) {
+export function createLineChart(
+  containerId,
+  data,
+  xValue,
+  yValues,
+  legendPosition = "top"
+) {
   const maxLabelWidth = 150;
-  const lineHeight = 1.1;
   const fontSize = 12;
 
   const container = document.getElementById(containerId);
@@ -9,7 +14,12 @@ export function createLineChart(containerId, data, xValue, yValues) {
     return;
   }
 
-  const margin = { top: 10, right: 10, bottom: 60, left: 10 };
+  const margin = {
+    top: legendPosition === "top" ? 50 : 10,
+    right: legendPosition === "right" ? 100 : 60,
+    bottom: 60,
+    left: 10,
+  };
 
   function calculateDimensions() {
     const containerWidth = container.clientWidth;
@@ -25,7 +35,6 @@ export function createLineChart(containerId, data, xValue, yValues) {
 
   const tempSvg = d3.select("body").append("svg");
 
-  // Encontrar a maior largura do rótulo do eixo Y
   const yAxisTemp = tempSvg
     .append("g")
     .call(
@@ -80,7 +89,6 @@ export function createLineChart(containerId, data, xValue, yValues) {
       .padding(0.5);
   }
 
-  // Criação das escalas Y para múltiplos valores
   const yScales = yValues.map((yValue) =>
     d3
       .scaleLinear()
@@ -89,19 +97,17 @@ export function createLineChart(containerId, data, xValue, yValues) {
       .range([height, 0])
   );
 
-  // Criação dos eixos Y
   yScales.forEach((yScale, i) => {
     if (i === 0) {
-      svg.append("g").call(d3.axisLeft(yScale).ticks(5)); // Primeira escala Y no lado esquerdo
+      svg.append("g").call(d3.axisLeft(yScale).ticks(5));
     } else {
       svg
         .append("g")
-        .attr("transform", `translate(${adjustedWidth + 50 * i}, 0)`)
-        .call(d3.axisRight(yScale).ticks(5)); // Escalas Y adicionais no lado direito
+        .attr("transform", `translate(${adjustedWidth}, 0)`)
+        .call(d3.axisRight(yScale).ticks(5));
     }
   });
 
-  // Criação do eixo X
   const xAxis = svg
     .append("g")
     .attr("transform", `translate(0,${height})`)
@@ -116,20 +122,60 @@ export function createLineChart(containerId, data, xValue, yValues) {
     .attr("transform", `rotate(-45)`)
     .style("text-anchor", "end");
 
-  const tooltip = d3.select("#tooltip");
+  const tooltip = d3
+    .select(`#${containerId}`)
+    .append("div")
+    .attr("class", "tooltip");
 
-  // Adicionando a legenda
-  const legend = svg
+  const legend = d3
+    .select(`#${containerId} svg`)
     .append("g")
-    .attr("transform", `translate(${width - 150}, 20)`);
+    .attr(
+      "transform",
+      legendPosition === "right"
+        ? `translate(${adjustedWidth + margin.left + 10}, ${margin.top})`
+        : `translate(${margin.left}, ${margin.top - 40})`
+    );
 
-  // Criação das linhas para cada valor de Y
+  const legendItemWidth = 100; // Largura máxima de cada item na legenda
+  const legendSpacing = 10; // Espaçamento horizontal entre os itens
+
+  let currentX = 0; // Posição horizontal inicial
+  let currentY = 0; // Posição vertical inicial
+
   yValues.forEach((yValue, i) => {
-    const linePath = svg
+    if (currentX + legendItemWidth > adjustedWidth) {
+      currentX = 0; // Reseta a posição horizontal
+      currentY += 20; // Incrementa a posição vertical
+    }
+
+    const legendGroup = legend
+      .append("g")
+      .attr("transform", `translate(${currentX}, ${currentY})`);
+
+    legendGroup
+      .append("circle")
+      .attr("cx", 0)
+      .attr("cy", 0)
+      .attr("r", 6)
+      .attr("fill", d3.schemeCategory10[i % 10]);
+
+    legendGroup
+      .append("text")
+      .attr("x", 20)
+      .attr("y", 5)
+      .style("font-size", "12px")
+      .text(yValue);
+
+    currentX += legendItemWidth + legendSpacing; // Atualiza a posição horizontal
+  });
+
+  yValues.forEach((yValue, i) => {
+    const line = svg
       .append("path")
       .datum(data)
       .attr("fill", "none")
-      .attr("stroke", d3.schemeCategory10[i % 10]) // Cores diferentes para cada linha
+      .attr("stroke", d3.schemeCategory10[i % 10])
       .attr("stroke-width", 1.5)
       .attr(
         "d",
@@ -146,64 +192,46 @@ export function createLineChart(containerId, data, xValue, yValues) {
       })
       .transition()
       .duration(2000)
-      .ease(d3.easeCubicInOut)
       .attr("stroke-dashoffset", 0);
 
-    // Animação dos marcadores (círculos)
-    svg
-      .selectAll(`.dot-${yValue}`)
+    const circles = svg
+      .selectAll(`.circle-${yValue}`)
       .data(data)
       .enter()
       .append("circle")
-      .attr("class", "dot")
+      .attr("class", `circle-${yValue}`)
       .attr("cx", (d) => xScale(d[xValue]))
       .attr("cy", (d) => yScales[i](d[yValue]))
-      .attr("r", 3)
-      .attr("fill", "black")
+      .attr("r", 4)
+      .attr("fill", d3.schemeCategory10[i % 10])
       .style("opacity", 0)
+      .on("mouseover", function (event, d) {
+        const formatValue = d3.format(",.0f");
+        const formattedValue = formatValue(d[yValue]).replace(/,/g, ".");
+
+        tooltip
+          .style("opacity", 1)
+          .style("visibility", "visible")
+          .html(
+            `<strong>${d[xValue]}</strong><br><span> Valor: ${formattedValue}</span>`
+          )
+          .style("left", `${event.pageX + 10}px`)
+          .style("top", `${event.pageY - 40}px`);
+      })
+      .on("mousemove", function (event) {
+        const [mouseX, mouseY] = d3.pointer(event);
+        tooltip
+          .style("left", `${mouseX + 10}px`)
+          .style("top", `${mouseY - 20}px`);
+      })
+      .on("mouseout", function () {
+        tooltip.style("opacity", 0).style("visibility", "hidden");
+      });
+
+    circles
       .transition()
       .duration(2000)
-      .delay((d, i) => i * 100)
+      .delay((d, i) => i * 200)
       .style("opacity", 1);
-
-    // Adicionar a legenda para cada linha
-    legend
-      .append("circle")
-      .attr("cx", 0)
-      .attr("cy", i * 20)
-      .attr("r", 6)
-      .attr("fill", d3.schemeCategory10[i % 10]);
-
-    legend
-      .append("text")
-      .attr("x", 20)
-      .attr("y", i * 20 + 5)
-      .style("font-size", "12px")
-      .text(yValue);
   });
-
-  // Tooltip para os pontos
-  svg
-    .selectAll(".dot")
-    .on("mouseover", function (event, d) {
-      // Função de formatação para valores numéricos
-      const formatValue = d3.format(".2f"); // Formata com 2 casas decimais
-      const formattedValue = formatValue(d[yValues[0]]).replace(".", ","); // Troca o ponto por vírgula
-
-      tooltip
-        .style("opacity", 1)
-        .html(
-          `<strong>${d[xValue]}</strong><br><span> Valor: ${formattedValue}</span>`
-        )
-        .style("left", `${event.pageX + 10}px`)
-        .style("top", `${event.pageY - 40}px`);
-    })
-    .on("mousemove", function (event) {
-      tooltip
-        .style("left", `${event.pageX + 10}px`)
-        .style("top", `${event.pageY - 40}px`);
-    })
-    .on("mouseout", function () {
-      tooltip.style("opacity", 0);
-    });
 }
